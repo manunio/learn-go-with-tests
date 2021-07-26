@@ -1,5 +1,11 @@
 package main
 
+import (
+	"learn-go-with-tests/di"
+	"log"
+	"net/http"
+)
+
 const spanish = "Spanish"
 const french = "French"
 const spanishHelloPrefix = "Hola, "
@@ -28,6 +34,5 @@ func greetingPrefix(language string) (prefix string) {
 }
 
 func main() {
-	// fmt.Println(Hello("world", ""))
-	// return
+	log.Fatal(http.ListenAndServe(":5000", http.HandlerFunc(di.MyGreetHandler)))
 }
