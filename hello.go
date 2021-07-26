@@ -1,9 +1,8 @@
 package main
 
 import (
-	"learn-go-with-tests/di"
-	"log"
-	"net/http"
+	"learn-go-with-tests/mocking"
+	"os"
 )
 
 const spanish = "Spanish"
@@ -34,5 +33,7 @@ func greetingPrefix(language string) (prefix string) {
 }
 
 func main() {
-	log.Fatal(http.ListenAndServe(":5000", http.HandlerFunc(di.MyGreetHandler)))
+	// log.Fatal(http.ListenAndServe(":5000", http.HandlerFunc(di.MyGreetHandler)))
+	sleeper := &mocking.DefaultSleeper{}
+	mocking.Countdown(os.Stdout, sleeper)
 }
