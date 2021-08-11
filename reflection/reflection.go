@@ -25,6 +25,7 @@ func walk(x interface{}, fn func(input string)) {
 			walkValue(val.MapIndex(key))
 		}
 	case reflect.Chan:
+		// TODO: learn more about this syntax
 		for v, ok := val.Recv(); ok; v, ok = val.Recv() {
 			walkValue(v)
 		}
