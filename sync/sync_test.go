@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestCounter(t *testing.T)  {
+func TestCounter(t *testing.T) {
 	counter := NewCounter()
 	counter.Inc()
 	counter.Inc()
@@ -33,7 +33,7 @@ func TestCounter(t *testing.T)  {
 
 }
 
-func assertCounter(t testing.TB, got *Counter, want int)  {
+func assertCounter(t testing.TB, got *Counter, want int) {
 	t.Helper()
 	if got.Value() != want {
 		t.Errorf("got %d want %d ", got.Value(), want)
