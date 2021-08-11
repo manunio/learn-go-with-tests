@@ -31,7 +31,7 @@ func (s *SpyStore) Fetch(ctx context.Context) (string, error) {
 				s.t.Log("spy store got cancelled")
 				return
 			default:
-				time.Sleep(10 * time.Microsecond)
+				time.Sleep(5 * time.Microsecond)
 				result += string(c)
 			}
 		}
@@ -61,7 +61,7 @@ func (s *SpyResponseWriter) Write([]byte) (int, error) {
 	return 0, errors.New("not implemented")
 }
 
-func (s *SpyResponseWriter) WriteHeader(statusCode int) {
+func (s *SpyResponseWriter) WriteHeader(int) {
 	s.written = true
 }
 
