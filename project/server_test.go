@@ -9,13 +9,27 @@ import (
 )
 
 type StubPlayerStore struct {
-	mu       sync.RWMutex
+	mu       *sync.RWMutex
 	scores   map[string]int
 	winCalls []string
+	league   []Player
 }
 
-func NewStubPlayerStore(scores map[string]int, winCalls []string) *StubPlayerStore {
-	return &StubPlayerStore{sync.RWMutex{}, scores, winCalls}
+func NewStubPlayerStore(
+	mu *sync.RWMutex,
+	scores map[string]int,
+	winCalls []string,
+	league []Player) *StubPlayerStore {
+	return &StubPlayerStore{
+		mu,
+		scores,
+		winCalls,
+		league,
+	}
+}
+
+func (s *StubPlayerStore) GetLeague() []Player {
+	return s.league
 }
 
 func (s *StubPlayerStore) GetPlayerScore(name string) int {
@@ -32,7 +46,7 @@ func (s *StubPlayerStore) RecordWin(name string) {
 }
 
 func TestGETPlayers(t *testing.T) {
-	store := NewStubPlayerStore(map[string]int{"Pepper": 20, "Floyd": 10}, nil)
+	store := NewStubPlayerStore(&sync.RWMutex{}, map[string]int{"Pepper": 20, "Floyd": 10}, nil, nil)
 	server := NewPlayerServer(store)
 
 	t.Run("returns Pepper's score", func(t *testing.T) {
@@ -67,7 +81,7 @@ func TestGETPlayers(t *testing.T) {
 }
 
 func TestStoreWins(t *testing.T) {
-	store := NewStubPlayerStore(map[string]int{}, nil)
+	store := NewStubPlayerStore(&sync.RWMutex{}, map[string]int{}, nil, nil)
 	server := NewPlayerServer(store)
 
 	t.Run("it record wins on POST", func(t *testing.T) {
@@ -90,32 +104,11 @@ func TestStoreWins(t *testing.T) {
 
 }
 
-func assertResponseBody(t *testing.T, got string, want string) {
-	if got != want {
-		t.Errorf("got %q, want %q", got, want)
-	}
-}
-
-func assertStatus(t testing.TB, got, want int) {
-	t.Helper()
-	if got != want {
-		t.Errorf("did not get correct status, got %d, want %d", got, want)
-	}
-}
-
-func newGetScoreRequest(name string) *http.Request {
-	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/players/%s", name), nil)
-	return req
-}
-
-func newPostWinRequest(name string) *http.Request {
-	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/players/%s", name), nil)
-	return req
-}
-
 func TestNewPlayerStoreConcurrently(t *testing.T) {
 	t.Run("it runs safe concurrently", func(t *testing.T) {
-		store := NewStubPlayerStore(map[string]int{"Pepper": 20, "Floyd": 10}, nil)
+		store := NewStubPlayerStore(&sync.RWMutex{},
+			map[string]int{"Pepper": 20, "Floyd": 10},
+			nil, nil)
 		wantedStore := 1000
 
 		var wg sync.WaitGroup
@@ -137,14 +130,24 @@ func TestNewPlayerStoreConcurrently(t *testing.T) {
 }
 
 func TestLeague(t *testing.T) {
-	store := NewStubPlayerStore(map[string]int{}, nil)
-	server := NewPlayerServer(store)
+	t.Run("it returns the league table in JSON", func(t *testing.T) {
+		wantedLeague := []Player{
+			{"Cleo", 32},
+			{"Chris", 20},
+			{"Tiest", 14},
+		}
 
-	t.Run("it returns 200 on /league", func(t *testing.T) {
-		request, _ := http.NewRequest(http.MethodGet, "/league", nil)
+		store := NewStubPlayerStore(&sync.RWMutex{}, nil, nil, wantedLeague)
+		server := NewPlayerServer(store)
+
+		request := newLeagueRequest()
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
+
+		got := getLeagueFromResponse(t, response.Body)
 		assertStatus(t, response.Code, http.StatusOK)
+		assertLeague(t, got, wantedLeague)
+		assertContentType(t, response, jsonContentType)
 	})
 }

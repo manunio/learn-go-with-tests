@@ -10,6 +10,14 @@ type InMemoryPlayerStore struct {
 	store map[string]int
 }
 
+func (i *InMemoryPlayerStore) GetLeague() []Player {
+	var league []Player
+	for name, wins := range i.store {
+		league = append(league, Player{name, wins})
+	}
+	return league
+}
+
 func NewInMemoryPlayerStore() *InMemoryPlayerStore {
 	return &InMemoryPlayerStore{sync.RWMutex{}, map[string]int{}}
 }
@@ -25,4 +33,3 @@ func (i *InMemoryPlayerStore) GetPlayerScore(name string) int {
 	defer i.mu.RUnlock()
 	return i.store[name]
 }
-
