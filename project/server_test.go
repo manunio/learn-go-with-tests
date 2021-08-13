@@ -28,7 +28,7 @@ func NewStubPlayerStore(
 	}
 }
 
-func (s *StubPlayerStore) GetLeague() []Player {
+func (s *StubPlayerStore) GetLeague() League {
 	return s.league
 }
 

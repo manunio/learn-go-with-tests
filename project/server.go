@@ -12,10 +12,10 @@ const jsonContentType = "application/json"
 type PlayerStore interface {
 	GetPlayerScore(name string) int
 	RecordWin(name string)
-	GetLeague() []Player
+	GetLeague() League
 }
 
-type playerServer struct {
+type PlayerServer struct {
 	store PlayerStore
 	http.Handler
 }
@@ -25,8 +25,8 @@ type Player struct {
 	Wins int
 }
 
-func NewPlayerServer(store PlayerStore) *playerServer {
-	playerServer := new(playerServer)
+func NewPlayerServer(store PlayerStore) *PlayerServer {
+	playerServer := new(PlayerServer)
 
 	playerServer.store = store
 
@@ -40,17 +40,17 @@ func NewPlayerServer(store PlayerStore) *playerServer {
 	return playerServer
 }
 
-func (p *playerServer) leagueHandler(w http.ResponseWriter, r *http.Request) {
+func (p *PlayerServer) leagueHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", jsonContentType)
 	_ = json.NewEncoder(w).Encode(p.store.GetLeague())
 }
 
-func (p *playerServer) getLeagueTable() []Player {
+func (p *PlayerServer) getLeagueTable() []Player {
 	leagueTable := []Player{{"Chris", 20}}
 	return leagueTable
 }
 
-func (p *playerServer) playerHandler(w http.ResponseWriter, r *http.Request) {
+func (p *PlayerServer) playerHandler(w http.ResponseWriter, r *http.Request) {
 	player := strings.TrimPrefix(r.URL.Path, "/players/")
 
 	switch r.Method {
@@ -61,7 +61,7 @@ func (p *playerServer) playerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (p *playerServer) showScore(w http.ResponseWriter, player string) {
+func (p *PlayerServer) showScore(w http.ResponseWriter, player string) {
 	score := p.store.GetPlayerScore(player)
 
 	if score == 0 {
@@ -71,7 +71,7 @@ func (p *playerServer) showScore(w http.ResponseWriter, player string) {
 	_, _ = fmt.Fprint(w, score)
 }
 
-func (p *playerServer) processWin(w http.ResponseWriter, player string) {
+func (p *PlayerServer) processWin(w http.ResponseWriter, player string) {
 	p.store.RecordWin(player)
 	w.WriteHeader(http.StatusAccepted)
 	return
