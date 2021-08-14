@@ -1,4 +1,4 @@
-package main
+package poker
 
 import (
 	"io/ioutil"
@@ -11,9 +11,9 @@ func TestTape_Write(t *testing.T) {
 
 	tape := &tape{file}
 
-	tape.Write([]byte("abc"))
+	_, _ = tape.Write([]byte("abc"))
 
-	file.Seek(0, 0)
+	_, _ = file.Seek(0, 0)
 	newFileContents, _ := ioutil.ReadAll(file)
 
 	got := string(newFileContents)
@@ -23,3 +23,4 @@ func TestTape_Write(t *testing.T) {
 		t.Errorf("got %q want %q", got, want)
 	}
 }
+

@@ -1,4 +1,4 @@
-package main
+package poker
 
 import (
 	"encoding/json"
@@ -81,11 +81,11 @@ func createTempFile(t testing.TB, initialData string) (*os.File, func()) {
 		t.Fatalf("could not create temp file %v", err)
 	}
 
-	tmpFile.Write([]byte(initialData))
+	_, _ = tmpFile.Write([]byte(initialData))
 
 	removeFile := func() {
-		tmpFile.Close()
-		os.Remove(tmpFile.Name())
+		_ = tmpFile.Close()
+		_ = os.Remove(tmpFile.Name())
 	}
 
 	return tmpFile, removeFile

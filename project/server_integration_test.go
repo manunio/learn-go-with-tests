@@ -1,8 +1,10 @@
-package main
+package poker
 
 import (
 	"net/http"
 	"net/http/httptest"
+	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -40,6 +42,48 @@ func TestRecordingWinsAndRetrievingThem(t *testing.T) {
 			{"Pepper", 3},
 		}
 		assertLeague(t, got, want)
+	})
+
+	// test for case when value is recorded by different clients(ex: cli)
+	// but doesn not reflect it(ex: api) unless server is restarted.
+	// TODO: check authenticity
+	t.Run("get score after post", func(t *testing.T) {
+		database, cleanDatabase := createTempFile(t, `[
+            {"Name": "Cleo", "Wins": 10},
+            {"Name": "Chris", "Wins": 33}]`)
+		defer cleanDatabase()
+
+		name := "Maxx"
+		store, err := NewFileSystemPlayerStore(database)
+		assertNoError(t, err)
+
+		// cli client record requests.
+		in1 := strings.NewReader("Maxx wins\n")
+		cli := NewCLI(store, in1)
+		cli.PlayPoker()
+
+		in2 := strings.NewReader("Maxx wins\n")
+		cli = NewCLI(store, in2)
+		cli.PlayPoker()
+
+		// api get request
+		server := NewPlayerServer(store)
+
+		request := newGetScoreRequest(name)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusOK)
+
+		got, err := strconv.Atoi(response.Body.String())
+		assertNoError(t, err)
+		want := 2
+
+		if got != want {
+			t.Errorf("got %d want %d", got, want)
+		}
+
 	})
 
 }

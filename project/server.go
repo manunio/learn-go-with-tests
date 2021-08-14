@@ -1,4 +1,4 @@
-package main
+package poker
 
 import (
 	"encoding/json"
@@ -42,7 +42,7 @@ func NewPlayerServer(store PlayerStore) *PlayerServer {
 
 func (p *PlayerServer) leagueHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", jsonContentType)
-	_ = json.NewEncoder(w).Encode(p.store.GetLeague())
+	check(json.NewEncoder(w).Encode(p.store.GetLeague()))
 }
 
 func (p *PlayerServer) getLeagueTable() []Player {
@@ -68,7 +68,8 @@ func (p *PlayerServer) showScore(w http.ResponseWriter, player string) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 
-	_, _ = fmt.Fprint(w, score)
+	_, err := fmt.Fprint(w, score)
+	check(err)
 }
 
 func (p *PlayerServer) processWin(w http.ResponseWriter, player string) {

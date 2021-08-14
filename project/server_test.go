@@ -1,4 +1,4 @@
-package main
+package poker
 
 import (
 	"fmt"
@@ -7,43 +7,6 @@ import (
 	"sync"
 	"testing"
 )
-
-type StubPlayerStore struct {
-	mu       *sync.RWMutex
-	scores   map[string]int
-	winCalls []string
-	league   []Player
-}
-
-func NewStubPlayerStore(
-	mu *sync.RWMutex,
-	scores map[string]int,
-	winCalls []string,
-	league []Player) *StubPlayerStore {
-	return &StubPlayerStore{
-		mu,
-		scores,
-		winCalls,
-		league,
-	}
-}
-
-func (s *StubPlayerStore) GetLeague() League {
-	return s.league
-}
-
-func (s *StubPlayerStore) GetPlayerScore(name string) int {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	score := s.scores[name]
-	return score
-}
-
-func (s *StubPlayerStore) RecordWin(name string) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.winCalls = append(s.winCalls, name)
-}
 
 func TestGETPlayers(t *testing.T) {
 	store := NewStubPlayerStore(&sync.RWMutex{}, map[string]int{"Pepper": 20, "Floyd": 10}, nil, nil)
