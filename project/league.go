@@ -6,6 +6,9 @@ import (
 	"io"
 )
 
+// League ..
+type League []Player
+
 // NewLeague ..
 func NewLeague(rdr io.Reader) ([]Player, error) {
 	var league []Player
@@ -14,4 +17,14 @@ func NewLeague(rdr io.Reader) ([]Player, error) {
 		err = fmt.Errorf("Problem parsing league, %v", err)
 	}
 	return league, err
+}
+
+// Find ..
+func (l League) Find(name string) *Player {
+	for i, p := range l {
+		if p.Name == name {
+			return &l[i]
+		}
+	}
+	return nil
 }

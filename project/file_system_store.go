@@ -14,18 +14,7 @@ type FileSystemPlayerStore struct {
 	league   League
 }
 
-// League ..
-type League []Player
 
-// Find ..
-func (l League) Find(name string) *Player {
-	for i, p := range l {
-		if p.Name == name {
-			return &l[i]
-		}
-	}
-	return nil
-}
 
 func initialisePlayerDBFile(file *os.File) error {
 
