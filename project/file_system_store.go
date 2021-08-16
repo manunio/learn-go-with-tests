@@ -14,8 +14,6 @@ type FileSystemPlayerStore struct {
 	league   League
 }
 
-
-
 func initialisePlayerDBFile(file *os.File) error {
 
 	if _, err := file.Seek(0, 0); err != nil {

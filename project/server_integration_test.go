@@ -47,8 +47,8 @@ func TestRecordingWinsAndRetrievingThem(t *testing.T) {
 	// TODO: check authenticity
 	// t.Run("get score after post", func(t *testing.T) {
 	// 	database, cleanDatabase := createTempFile(t, `[
-    //         {"Name": "Cleo", "Wins": 10},
-    //         {"Name": "Chris", "Wins": 33}]`)
+	//         {"Name": "Cleo", "Wins": 10},
+	//         {"Name": "Chris", "Wins": 33}]`)
 	// 	defer cleanDatabase()
 	//
 	// 	var dummyBlindAlerter = &SpyBlindAlerter{}

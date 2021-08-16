@@ -13,4 +13,3 @@ func (t *tape) Write(p []byte) (n int, err error) {
 	_, err = t.file.Seek(0, 0)
 	return t.file.Write(p)
 }
-
