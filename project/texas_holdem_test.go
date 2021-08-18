@@ -3,6 +3,7 @@ package poker
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"strings"
 	"testing"
 	"time"
@@ -13,7 +14,7 @@ func TestGame_Start(t *testing.T) {
 
 		blindAlerter := &SpyBlindAlerter{}
 		game := NewTexasHoldem(blindAlerter, dummyPlayerStore)
-		game.Start(5)
+		game.Start(5, ioutil.Discard)
 
 		cases := []ScheduledAlert{
 			{0 * time.Second, 100},
@@ -35,7 +36,7 @@ func TestGame_Start(t *testing.T) {
 		blindAlerter := &SpyBlindAlerter{}
 		game := NewTexasHoldem(blindAlerter, dummyPlayerStore)
 
-		game.Start(7)
+		game.Start(7, ioutil.Discard)
 
 		cases := []ScheduledAlert{
 			{0 * time.Second, 100},
