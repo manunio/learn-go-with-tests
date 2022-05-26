@@ -1,8 +1,11 @@
 package poker
 
 import (
+	"fmt"
+	"io"
 	"sync"
 	"testing"
+	"time"
 )
 
 type StubPlayerStore struct {
@@ -52,4 +55,21 @@ func AssertPlayerWin(t testing.TB, store *StubPlayerStore, winner string) {
 	if store.winCalls[0] != winner {
 		t.Errorf("did not store correct winner got %q want %q", store.winCalls[0], winner)
 	}
+}
+
+type ScheduledAlert struct {
+	at     time.Duration
+	amount int
+}
+
+type SpyBlindAlerter struct {
+	alerts []ScheduledAlert
+}
+
+func (s ScheduledAlert) String() string {
+	return fmt.Sprintf("%d chips at %v", s.amount, s.at)
+}
+
+func (s *SpyBlindAlerter) ScheduleAlertAt(at time.Duration, amount int, to io.Writer) {
+	s.alerts = append(s.alerts, ScheduledAlert{at, amount})
 }

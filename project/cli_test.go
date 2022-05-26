@@ -17,39 +17,27 @@ var (
 	dummyStdOut = &bytes.Buffer{}
 )
 
-type SpyBlindAlerter struct {
-	alerts []ScheduledAlert
-}
-
-type ScheduledAlert struct {
-	at     time.Duration
-	amount int
-}
-
 type GameSpy struct {
 	StartCalled     bool
 	StartCalledWith int
+	BlindAlert      []byte
 
-	FinishCalled       bool
-	FinishedCalledWith string
+	FinishCalled     bool
+	FinishCalledWith string
 }
 
-func (g *GameSpy) Start(numberOfPlayers int, alertsDestination io.Writer) {
+func (g *GameSpy) Start(numberOfPlayers int, out io.Writer) {
+	fmt.Printf("Start called.. %d\n", numberOfPlayers)
 	g.StartCalled = true
 	g.StartCalledWith = numberOfPlayers
+	_, err := out.Write(g.BlindAlert)
+	check(err)
 }
 
 func (g *GameSpy) Finish(winner string) {
+	fmt.Printf("Finished called.. %q\n", winner)
 	g.FinishCalled = true
-	g.FinishedCalledWith = winner
-}
-
-func (s ScheduledAlert) String() string {
-	return fmt.Sprintf("%d chips at %v", s.amount, s.at)
-}
-
-func (s *SpyBlindAlerter) ScheduleAlertAt(at time.Duration, amount int, to io.Writer) {
-	s.alerts = append(s.alerts, ScheduledAlert{at, amount})
+	g.FinishCalledWith = winner
 }
 
 func TestCLI(t *testing.T) {
@@ -121,17 +109,37 @@ func assertGameNotStarted(t testing.TB, game *GameSpy) {
 	}
 }
 
-func assertGameFinishCalledWith(t testing.TB, game *GameSpy, winner string) {
-	t.Helper()
-	if game.FinishedCalledWith != winner {
-		t.Errorf("expected finish called with %q but got %q", game.FinishedCalledWith, winner)
+func retryUntil(d time.Duration, f func() bool) bool {
+	deadline := time.Now().Add(d)
+	for time.Now().Before(deadline) {
+		if f() {
+			return true
+		}
 	}
+	return false
 }
 
 func assertGameStartedWith(t testing.TB, game *GameSpy, numberOfPlayersWanted int) {
 	t.Helper()
-	if game.StartCalledWith != numberOfPlayersWanted {
+
+	passed := retryUntil(500*time.Millisecond, func() bool {
+		return game.StartCalledWith == numberOfPlayersWanted
+	})
+
+	if !passed {
 		t.Errorf("wanted Start called with %d but got %d", numberOfPlayersWanted, game.StartCalledWith)
+	}
+}
+
+func assertGameFinishCalledWith(t testing.TB, game *GameSpy, winner string) {
+	t.Helper()
+
+	passed := retryUntil(500*time.Millisecond, func() bool {
+		return game.FinishCalledWith == winner
+	})
+
+	if !passed {
+		t.Errorf("expected finish called with %q but got %q", winner, game.FinishCalledWith)
 	}
 }
 

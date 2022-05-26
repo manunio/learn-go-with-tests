@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -18,12 +16,14 @@ const (
 	htmlTemplatePath = "game.html"
 )
 
+// PlayerStore ..
 type PlayerStore interface {
 	GetPlayerScore(name string) int
 	RecordWin(name string)
 	GetLeague() League
 }
 
+// PlayerServer ..
 type PlayerServer struct {
 	store PlayerStore
 	http.Handler
@@ -31,32 +31,13 @@ type PlayerServer struct {
 	game     Game
 }
 
+// Player ..
 type Player struct {
 	Name string
 	Wins int
 }
 
-type playerServerWS struct {
-	*websocket.Conn
-}
-
-func newPlayerServerWS(w http.ResponseWriter, r *http.Request) *playerServerWS {
-	conn, err := wsUpgrader.Upgrade(w, r, nil)
-
-	if err != nil {
-		log.Printf("problem upgrading connection to WebSockets %v\n", err)
-	}
-	return &playerServerWS{conn}
-}
-
-func (w *playerServerWS) WaitForMsg() string {
-	_, msg, err := w.ReadMessage()
-	if err != nil {
-		log.Printf("error reading from websocket %v\n", err)
-	}
-	return string(msg)
-}
-
+// NewPlayerServer ..
 func NewPlayerServer(store PlayerStore, game Game) (*PlayerServer, error) {
 	p := new(PlayerServer)
 
@@ -131,9 +112,9 @@ func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
 	ws := newPlayerServerWS(w, r)
 
 	numberOfPlayersMsg := ws.WaitForMsg()
-	numberOfPlayers, _ := strconv.Atoi(string(numberOfPlayersMsg))
-	p.game.Start(numberOfPlayers, ioutil.Discard) // TODO: do not discard the blinds
+	numberOfPlayers, _ := strconv.Atoi(numberOfPlayersMsg)
+	p.game.Start(numberOfPlayers, ws)
 
 	winner := ws.WaitForMsg()
-	p.game.Finish(string(winner))
+	p.game.Finish(winner)
 }
